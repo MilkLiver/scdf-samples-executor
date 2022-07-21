@@ -13,9 +13,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.cloud.task.configuration.EnableTask;
 import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
 import com.milkliver.samples.scdfexecutor01.utils.SendRequest;
 
+@Component
 @EnableTask
 public class MainTask {
 
