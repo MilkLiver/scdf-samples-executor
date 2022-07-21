@@ -69,8 +69,7 @@ public class MainTask {
 				log.info("CommandBase64: " + systemCommandBase64);
 				String systemCommand = new String(decoder.decode(systemCommandBase64));
 				log.info("Command: " + systemCommand);
-				log.info(
-						"==================================================start==================================================");
+				log.info("========================start========================");
 
 				Process process = Runtime.getRuntime().exec(systemCommand);
 //				============================================================================================
@@ -83,12 +82,12 @@ public class MainTask {
 					execCmdRes.append("\r\n");
 				}
 //				============================================================================================
-				log.info(
-						"===================================================end===================================================");
 
 				log.info(execCmdRes.toString());
 
 				log.info("waitFor: " + String.valueOf(process.waitFor()));
+
+				log.info("=========================end=========================");
 
 				Map<String, Object> jsonMap = new HashMap<String, Object>();
 
