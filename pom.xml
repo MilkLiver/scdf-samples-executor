@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.milkliver.samples</groupId>
 	<artifactId>scdf-executor01</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>scdf-executor01</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
@@ -82,6 +82,7 @@
 	</dependencyManagement>
 
 	<build>
+		<finalName>scdf-task01</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
