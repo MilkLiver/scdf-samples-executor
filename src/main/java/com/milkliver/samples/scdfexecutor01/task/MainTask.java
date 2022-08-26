@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.milkliver.samples.scdfexecutor01.kafka.MessageProducer;
+import com.milkliver.samples.scdfexecutor01.utils.CommandTools;
 import com.milkliver.samples.scdfexecutor01.utils.SendRequest;
 
 @Component
@@ -49,6 +51,9 @@ public class MainTask {
 	@Value("${system.command}")
 	String systemCommandBase64;
 
+	@Value("${system.timeout:5000}")
+	Long systemTimeout;
+
 	@Autowired
 	SendRequest sendRequest;
 
@@ -57,6 +62,9 @@ public class MainTask {
 
 	@Autowired
 	MessageProducer messageProducer;
+
+	@Autowired
+	CommandTools commandTools;
 
 	@Bean
 	public CommandLineRunner commandLineRunner() {
@@ -75,56 +83,23 @@ public class MainTask {
 				log.info("Command: " + systemCommand);
 				log.info("========================start========================");
 
-				Process process = Runtime.getRuntime().exec(systemCommand);
-//				============================================================================================
-				StringBuilder execCmdRes = new StringBuilder();
+				Map<String, Object> taskExecuteResMsgMap = new HashMap<String, Object>();
 
-				BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-				String line;
-				while ((line = bufferedReader.readLine()) != null) {
-					execCmdRes.append(line);
-					execCmdRes.append("\r\n");
-				}
-//				============================================================================================
-
-				log.info(execCmdRes.toString());
-
-				log.info("waitFor: " + String.valueOf(process.waitFor()));
+				// execute command and return execute result map
+				taskExecuteResMsgMap = commandTools.executeCommandLine(systemCommand, true, true, systemTimeout);
 
 				log.info("=========================end=========================");
 
-				Map<String, Object> taskExecuteResMsgMap = new HashMap<String, Object>();
-				Map<String, Object> batchInfoMap = new HashMap<String, Object>();
-				boolean taskExecuteStatus = false;
-
-				if (process.waitFor() != 0) {
-					log.info("task is failed");
-				} else {
-					taskExecuteStatus = true;
-//					sendResultApi();
-					log.info("task is success");
-				}
-
-				// create json string
-				String execCmdResLogsBase64 = new String(encoder.encode(execCmdRes.toString().getBytes()));
-
-				taskExecuteResMsgMap.put("status", taskExecuteStatus);
-
-				batchInfoMap.put("logs", execCmdResLogsBase64);
-
-				batchInfoMap.put("command", systemCommandBase64);
-				taskExecuteResMsgMap.put("batch", batchInfoMap);
-
+				// add taskid to execute result map
 				if (taskid != null) {
-					taskExecuteResMsgMap.put("taskid", taskExecuteStatus);
-					log.info("taskid: " + String.valueOf(taskid) + " is running ...");
+					taskExecuteResMsgMap.put("taskid", taskid);
 				} else {
 					taskExecuteResMsgMap.put("taskid", "-1");
-					log.info("taskid: null is running ...");
 				}
+
+				// transfer map to json
 				ObjectMapper taskExecuteResMsgJson = new ObjectMapper();
 				StringBuilder taskExecuteResMsgJsonStrSb = new StringBuilder();
-
 				taskExecuteResMsgJsonStrSb.append(taskExecuteResMsgJson.writeValueAsString(taskExecuteResMsgMap));
 
 				// send json to kafka
@@ -137,8 +112,6 @@ public class MainTask {
 						log.error(elem.toString());
 					}
 				}
-
-				process.destroy();
 
 			} catch (Exception e) {
 				log.error(e.getMessage());
