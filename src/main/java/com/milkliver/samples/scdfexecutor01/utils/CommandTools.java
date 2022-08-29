@@ -27,10 +27,8 @@ public class CommandTools {
 			final boolean printError, final long timeout) throws Exception {
 
 		Runtime runtime = Runtime.getRuntime();
-//		Process process = null;
-//		Worker worker = null;
-		Process process = runtime.exec(commandLine);
-		Worker worker = new Worker(process, printOutput, printError);
+		Process process = null;
+		Worker worker = null;
 		try {
 			log.info("command: " + commandLine);
 			log.info("timeout: " + String.valueOf(timeout));
@@ -39,8 +37,9 @@ public class CommandTools {
 
 			resultInfoMap.put("timeout", timeout);
 
-//			process = runtime.exec(commandLine);
-//			worker = new Worker(process, printOutput, printError);
+			process = runtime.exec(commandLine);
+			/* Set up process I/O. */
+			worker = new Worker(process, printOutput, printError);
 			worker.start();
 
 			resultInfoMap.put("command", new String(encoder.encode(commandLine.getBytes())));
