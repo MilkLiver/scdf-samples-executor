@@ -17,8 +17,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.milkliver.samples.scdfexecutor01.kafka.MessageProducer;
 import com.milkliver.samples.scdfexecutor01.utils.CommandTools;
+import com.milkliver.samples.scdfexecutor01.utils.MsgOps;
 import com.milkliver.samples.scdfexecutor01.utils.SendRequest;
 
 @Component
@@ -61,7 +61,7 @@ public class MainTask {
 	String taskid;
 
 	@Autowired
-	MessageProducer messageProducer;
+	MsgOps msgOps;
 
 	@Autowired
 	CommandTools commandTools;
@@ -102,10 +102,11 @@ public class MainTask {
 				StringBuilder taskExecuteResMsgJsonStrSb = new StringBuilder();
 				taskExecuteResMsgJsonStrSb.append(taskExecuteResMsgJson.writeValueAsString(taskExecuteResMsgMap));
 
-				// send json to kafka
-				log.info("send to kafka json: " + taskExecuteResMsgJsonStrSb.toString());
+				// send message json
+				log.info("send to message json: " + taskExecuteResMsgJsonStrSb.toString());
 				try {
-					messageProducer.send(taskExecuteResMsgJsonStrSb.toString());
+					msgOps.send(taskExecuteResMsgJsonStrSb.toString(), taskid);
+//					msgOps.send(taskExecuteResMsgJsonStrSb.toString(), "12345");
 				} catch (Exception e) {
 					log.error(e.getMessage());
 					for (StackTraceElement elem : e.getStackTrace()) {
